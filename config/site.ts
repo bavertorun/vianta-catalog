@@ -1,0 +1,35 @@
+export const siteConfig = {
+  name: 'Vianta Lingerie',
+  wordmark: 'VIANTA',
+  tagline: 'LINGERIE',
+  heroEyebrow: 'FANTEZİ İÇ GİYİM · TOPTAN KATALOG',
+  heroTitle: 'Görünmeyen bir ayrıntı gibi.',
+  heroTitleItalic: 'ayrıntı',
+  heroCopy: 'Seçili modeller. Özenle hazırlanmış seriler. Vianta, özel satış ortakları için.',
+  refLabel: 'RÉF.' as 'RÉF.' | 'ÜRÜN KODU:',
+  whatsappNumber: '905343529080',
+  contact: {
+    phone: '0534 352 90 80',
+    whatsappDisplay: '0534 352 90 80',
+    email: 'viantalingerie@gmail.com',
+    address: 'Ortakaya İş Hanı, Sururi, Rastıkçı Sk. No:5A, 34120 Fatih/İstanbul',
+    instagram: '@viantalingerie',
+    instagramUrl: 'https://instagram.com/viantalingerie',
+    hours: [
+      { day: 'Pazartesi', time: '07:30–18:00' },
+      { day: 'Salı', time: '07:30–18:00' },
+      { day: 'Çarşamba', time: '07:30–18:00' },
+      { day: 'Perşembe', time: '07:30–18:00' },
+      { day: 'Cuma', time: '07:30–18:00' },
+      { day: 'Cumartesi', time: '07:30–18:00' },
+      { day: 'Pazar', time: 'Kapalı' },
+    ],
+  },
+  seo: {
+    title: 'Vianta Lingerie — Toptan Fantezi İç Giyim Kataloğu',
+    description:
+      'Vianta Lingerie seçili modeller ve toptan sipariş listesi. Online ödeme yok; sipariş WhatsApp üzerinden tamamlanır.',
+    keywords: ['vianta', 'lingerie', 'toptan', 'fantezi iç giyim', 'katalog'],
+  },
+  note: 'Toptan satış yapılmaktadır — perakende satış yoktur.',
+}

@@ -1,0 +1,274 @@
+{
+  "products": [
+    {
+      "id": "p_DJ3854",
+      "code": "DJ3854S",
+      "price": 3500,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "color": "SİYAH",
+      "images": [
+        "/products/DJ3854-1.webp",
+        "/products/DJ3854-2.webp",
+        "/products/DJ3854-3.webp",
+        "/products/DJ3854-4.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 1
+    },
+    {
+      "id": "p_DJ3854K",
+      "code": "DJ3854K",
+      "price": 3500,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "color": "KIRMIZI",
+      "images": [
+        "/products/DJ3854K-1.webp",
+        "/products/DJ3854K-2.webp",
+        "/products/DJ3854K-3.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 2
+    },
+    {
+      "id": "p_XZ4700A",
+      "code": "XZ4700A",
+      "price": 2625,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "SİYAH",
+      "images": [
+        "/products/XZ4700A-1.webp",
+        "/products/XZ4700A-2.webp",
+        "/products/XZ4700A-3.webp",
+        "/products/XZ4700A-4.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 3
+    },
+    {
+      "id": "p_XZ4572A",
+      "code": "XZ4572A",
+      "price": 2625,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "SİYAH",
+      "images": [
+        "/products/XZ4572A-1.webp",
+        "/products/XZ4572A-2.webp",
+        "/products/XZ4572A-3.webp",
+        "/products/XZ4572A-4.webp",
+        "/products/XZ4572A-5.webp",
+        "/products/XZ4572A-6.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 4
+    },
+    {
+      "id": "p_XZ4720A",
+      "code": "XZ4720A",
+      "price": 2625,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "KIRMIZI",
+      "images": [
+        "/products/XZ4720A-1.webp",
+        "/products/XZ4720A-2.webp",
+        "/products/XZ4720A-3.webp",
+        "/products/XZ4720A-4.webp",
+        "/products/XZ4720A-5.webp",
+        "/products/XZ4720A-6.webp",
+        "/products/XZ4720A-7.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 5
+    },
+    {
+      "id": "p_XZ4596A",
+      "code": "XZ4596A",
+      "price": 2775,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "SİYAH",
+      "images": [
+        "/products/XZ4596A-1.webp",
+        "/products/XZ4596A-2.webp",
+        "/products/XZ4596A-3.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 6
+    },
+    {
+      "id": "p_XZ4655A",
+      "code": "XZ4655A",
+      "price": 2625,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "SİYAH",
+      "images": [
+        "/products/XZ4655A-1.webp",
+        "/products/XZ4655A-2.webp",
+        "/products/XZ4655A-3.webp",
+        "/products/XZ4655A-4.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 7
+    },
+    {
+      "id": "p_XZ4682A",
+      "code": "XZ4682A",
+      "price": 2625,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "KIRMIZI",
+      "images": [
+        "/products/XZ4682A-1.webp",
+        "/products/XZ4682A-2.webp",
+        "/products/XZ4682A-3.webp",
+        "/products/XZ4682A-4.webp",
+        "/products/XZ4682A-5.webp",
+        "/products/XZ4682A-6.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 8
+    },
+    {
+      "id": "p_XZ4893A",
+      "code": "XZ4893A",
+      "price": 2340,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "SİYAH",
+      "images": [
+        "/products/XZ4893A-1.webp",
+        "/products/XZ4893A-2.webp",
+        "/products/XZ4893A-3.webp",
+        "/products/XZ4893A-4.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 9
+    },
+    {
+      "id": "p_XZ4531A",
+      "code": "XZ4531A",
+      "price": 2700,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "SİYAH",
+      "images": [
+        "/products/XZ4531A-1.webp",
+        "/products/XZ4531A-2.webp",
+        "/products/XZ4531A-3.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 10
+    },
+    {
+      "id": "p_XZ4665A",
+      "code": "XZ4665A-S",
+      "price": 2625,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "SİYAH",
+      "images": [
+        "/products/XZ4665A-S-1.webp",
+        "/products/XZ4665A-S-2.webp",
+        "/products/XZ4665A-S-3.webp",
+        "/products/XZ4665A-S-4.webp",
+        "/products/XZ4665A-S-5.webp",
+        "/products/XZ4665A-S-6.webp",
+        "/products/XZ4665A-S-7.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 12
+    },
+    {
+      "id": "p_XZ4665A-K",
+      "code": "XZ4665A-K",
+      "price": 2625,
+      "currency": "TRY",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "color": "KIRMIZI",
+      "images": [
+        "/products/XZ4665A-K-1.webp"
+      ],
+      "description": "",
+      "isNew": true,
+      "inStock": true,
+      "order": 12
+    }
+  ]
+}
