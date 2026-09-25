@@ -2,10 +2,12 @@ import { cookies } from 'next/headers'
 import { createHash, timingSafeEqual } from 'crypto'
 import { promises as fs } from 'fs'
 import path from 'path'
+import { head, put } from '@vercel/blob'
 import { writeAtomic } from '@/lib/atomic-write'
 
 const COOKIE_NAME = 'vianta_admin_session'
 const ADMIN_FILE = path.join(process.cwd(), 'data', 'admin.json')
+const ADMIN_BLOB = 'catalog/admin.json'
 
 function hashPassword(password: string): string {
   return createHash('sha256').update(`vianta:${password}`).digest('hex')
@@ -22,11 +24,24 @@ function hashesMatch(expected: string, actual: string): boolean {
   }
 }
 
+function parseHash(raw: string): string | null {
+  const data = JSON.parse(raw) as { passwordHash?: string }
+  return data.passwordHash || null
+}
+
 async function readStoredHash(): Promise<string | null> {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      const meta = await head(ADMIN_BLOB)
+      const res = await fetch(meta.url, { cache: 'no-store' })
+      if (res.ok) return parseHash(await res.text())
+    } catch {
+      // Kayıtlı hash yoksa yerleşik şifre kullanılır.
+    }
+  }
+
   try {
-    const raw = await fs.readFile(ADMIN_FILE, 'utf8')
-    const data = JSON.parse(raw) as { passwordHash?: string }
-    return data.passwordHash || null
+    return parseHash(await fs.readFile(ADMIN_FILE, 'utf8'))
   } catch {
     return null
   }
@@ -62,7 +77,20 @@ export function sessionCookieOptions(maxAge: number) {
 
 export async function setAdminPassword(password: string): Promise<void> {
   const passwordHash = hashPassword(password)
-  await writeAtomic(ADMIN_FILE, JSON.stringify({ passwordHash }, null, 2))
+  const body = JSON.stringify({ passwordHash }, null, 2)
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    await put(ADMIN_BLOB, body, {
+      access: 'public',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: 'application/json',
+      cacheControlMaxAge: 60,
+    })
+    return
+  }
+
+  await writeAtomic(ADMIN_FILE, body)
 }
 
 export async function isAuthenticated(): Promise<boolean> {

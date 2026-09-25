@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { isReadOnlyFsError } from '@/lib/atomic-write'
 import {
   COOKIE_NAME,
   isAuthenticated,
@@ -32,14 +31,8 @@ export async function POST(request: Request) {
 
   try {
     await setAdminPassword(newPassword)
-  } catch (error) {
-    if (isReadOnlyFsError(error)) {
-      return NextResponse.json(
-        { error: 'Şifre diske yazılamadı. Canlı sunucuda kalıcı disk gerekli.' },
-        { status: 500 },
-      )
-    }
-    throw error
+  } catch {
+    return NextResponse.json({ error: 'Şifre kaydedilemedi' }, { status: 500 })
   }
 
   const response = NextResponse.json({ ok: true })
