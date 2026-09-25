@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { ArrowRight, ShoppingBag, X } from 'lucide-react'
 import { QuantityControl } from '@/components/quantity-control'
 import { siteConfig } from '@/config/site'
-import { formatPrice, sizesText } from '@/lib/format'
+import { formatPrice, sizesText, unitPrice } from '@/lib/format'
 import { buildPlainTextList, buildWhatsAppUrl } from '@/lib/whatsapp'
 import { useOrderList } from '@/store/order-list'
 
@@ -126,7 +126,7 @@ export function OrderDrawer() {
                         <strong>{formatPrice(item.price * item.seriesQty)}</strong>
                       </div>
                       <p>
-                        {formatPrice(item.price)}{' '}
+                        Seri {formatPrice(item.price)} · Adet {formatPrice(unitPrice(item.price, item.sizes))}{' '}
                         <span>
                           · {sizesText(item.sizes)} · {item.seriesQty} seri
                         </span>

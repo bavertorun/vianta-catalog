@@ -1,7 +1,31 @@
+import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
+import { isReadOnlyFsError } from '@/lib/atomic-write'
 import { isAuthenticated } from '@/lib/admin-auth'
 import { getProducts, readProductsFile, writeProductsFile } from '@/lib/products'
 import type { Product, ProductsFile } from '@/types/product'
+
+function revalidateCatalog() {
+  revalidatePath('/')
+  revalidatePath('/urun/[code]', 'page')
+}
+
+function writeError(error: unknown) {
+  if (isReadOnlyFsError(error)) {
+    return NextResponse.json(
+      { error: 'Katalog diske yazılamadı. Canlı sunucuda kalıcı disk gerekli.' },
+      { status: 500 },
+    )
+  }
+  throw error
+}
+
+function safeImages(images: unknown[]): string[] {
+  return images.filter(
+    (src): src is string =>
+      typeof src === 'string' && src.startsWith('/products/') && !src.includes('..'),
+  )
+}
 
 export async function GET() {
   if (!(await isAuthenticated())) {
@@ -21,7 +45,12 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'Geçersiz veri' }, { status: 400 })
   }
 
-  await writeProductsFile({ products: body.products })
+  try {
+    await writeProductsFile({ products: body.products })
+  } catch (error) {
+    return writeError(error)
+  }
+  revalidateCatalog()
   return NextResponse.json({ ok: true })
 }
 
@@ -53,8 +82,42 @@ export async function POST(request: Request) {
     data.products.push(product)
   }
 
-  await writeProductsFile(data)
+  try {
+    await writeProductsFile(data)
+  } catch (error) {
+    return writeError(error)
+  }
+  revalidateCatalog()
   return NextResponse.json({ ok: true, product })
+}
+
+export async function PATCH(request: Request) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
+  }
+
+  const body = await request.json().catch(() => ({}))
+  const id = String(body.id || '')
+  if (!id || !Array.isArray(body.images)) {
+    return NextResponse.json({ error: 'Geçersiz veri' }, { status: 400 })
+  }
+
+  const images = safeImages(body.images)
+
+  const data = await readProductsFile()
+  const index = data.products.findIndex((p) => p.id === id)
+  if (index < 0) {
+    return NextResponse.json({ error: 'Ürün bulunamadı' }, { status: 404 })
+  }
+
+  data.products[index] = { ...data.products[index], images }
+  try {
+    await writeProductsFile(data)
+  } catch (error) {
+    return writeError(error)
+  }
+  revalidateCatalog()
+  return NextResponse.json({ ok: true, product: data.products[index] })
 }
 
 export async function DELETE(request: Request) {
@@ -68,6 +131,11 @@ export async function DELETE(request: Request) {
 
   const data = await readProductsFile()
   data.products = data.products.filter((p) => p.id !== id)
-  await writeProductsFile(data)
+  try {
+    await writeProductsFile(data)
+  } catch (error) {
+    return writeError(error)
+  }
+  revalidateCatalog()
   return NextResponse.json({ ok: true })
 }

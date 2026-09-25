@@ -10,7 +10,7 @@ import { QuantityControl } from '@/components/quantity-control'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { siteConfig } from '@/config/site'
-import { formatPrice, seriesLabel, sizesText } from '@/lib/format'
+import { formatPrice, seriesLabel, sizesText, unitPrice } from '@/lib/format'
 import { useOrderList } from '@/store/order-list'
 import type { Product } from '@/types/product'
 
@@ -89,7 +89,18 @@ export function ProductDetailClient({ product, related }: ProductDetailProps) {
             <p className="eyebrow">
               {siteConfig.refLabel} {product.code}
             </p>
-            <h1 className="detail-price">{formatPrice(product.price)}</h1>
+            <div className="price-pair detail-price-pair">
+              <div>
+                <span className="price-kicker">Seri fiyatı</span>
+                <h1 className="detail-price">{formatPrice(product.price)}</h1>
+              </div>
+              <div className="price-pair-unit">
+                <span className="price-kicker">Adet fiyatı</span>
+                <p className="detail-unit-price">
+                  {formatPrice(unitPrice(product.price, product.sizes))}
+                </p>
+              </div>
+            </div>
             <p className="series-detail">
               {sizesText(product.sizes)} — {seriesLabel(product.sizes)}
             </p>

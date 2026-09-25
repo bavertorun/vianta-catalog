@@ -340,12 +340,34 @@ em { color: var(--champagne); font-weight: 300; font-style: italic; }
 .stock-badge { color: var(--muted); top: auto; bottom: 48px; }
 
 .product-meta { padding: 18px 8px 8px; }
+.price-pair {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.price-kicker {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.price-pair-unit { text-align: right; }
 .price {
   margin: 0;
   color: var(--champagne);
   font: 28px/1 var(--font-display), Georgia, serif;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
+}
+.unit-price {
+  margin: 0;
+  color: var(--cream);
+  font: 22px/1 var(--font-display), Georgia, serif;
+  font-variant-numeric: tabular-nums;
 }
 .series-detail {
   color: var(--muted);
@@ -732,10 +754,17 @@ em { color: var(--champagne); font-weight: 300; font-style: italic; }
   border-color: var(--champagne);
   opacity: 1;
 }
+.detail-price-pair { margin: 12px 0; }
 .detail-price {
   font: 300 42px/1 var(--font-display), Georgia, serif;
   color: var(--champagne);
-  margin: 12px 0;
+  margin: 0;
+}
+.detail-unit-price {
+  margin: 0;
+  font: 300 28px/1 var(--font-display), Georgia, serif;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
 }
 .detail-meta, .detail-desc {
   color: var(--muted);
@@ -847,7 +876,7 @@ em { color: var(--champagne); font-weight: 300; font-style: italic; }
   font-weight: 300;
   margin: 0;
 }
-.admin-login label, .admin-form label {
+.admin-login label, .admin-form label, .admin-password label {
   display: grid;
   gap: 6px;
   font-size: 11px;
@@ -855,7 +884,7 @@ em { color: var(--champagne); font-weight: 300; font-style: italic; }
   text-transform: uppercase;
   color: var(--muted);
 }
-.admin-login input, .admin-form input, .admin-form textarea, .admin-form select {
+.admin-login input, .admin-form input, .admin-form textarea, .admin-form select, .admin-password input {
   background: #1d1718;
   border: 1px solid var(--line);
   border-radius: 2px;
@@ -1044,6 +1073,58 @@ em { color: var(--champagne); font-weight: 300; font-style: italic; }
 .admin-form-actions button:last-child {
   background: transparent;
   color: var(--muted);
+}
+.admin-password {
+  border: 1px solid var(--line);
+  background: var(--noir-soft);
+  padding: 16px;
+  margin: 0 0 16px;
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+}
+.admin-password h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 300;
+  font-size: 22px;
+  margin: 0;
+}
+.admin-unit {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+.cover-upload-row { display: grid; gap: 8px; }
+.admin-image-list img {
+  width: 72px;
+  height: 96px;
+  object-fit: cover;
+  display: block;
+  position: relative;
+  z-index: 0;
+}
+.admin-image-list .img-order-actions,
+.admin-image-list .cover-btn {
+  position: relative;
+  z-index: 2;
+}
+.admin-image-list > div > button.cover-btn {
+  border: 1px solid var(--champagne);
+  background: transparent;
+  color: var(--champagne);
+  min-height: 26px;
+  width: 100%;
+  padding: 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.preview-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
 }
 
 /* Responsive */

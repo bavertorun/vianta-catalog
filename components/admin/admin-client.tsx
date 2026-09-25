@@ -1,12 +1,11 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { compressImage } from '@/lib/compress-image'
 import { ALL_SIZES, type Product, type Size } from '@/types/product'
-import { formatPrice, seriesLabel, sizesText } from '@/lib/format'
+import { formatPrice, seriesLabel, sizesText, unitPrice } from '@/lib/format'
 
 interface AdminClientProps {
   initialProducts: Product[]
@@ -32,6 +31,14 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
   const [editing, setEditing] = useState<Product | null>(null)
   const [message, setMessage] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [passwordOpen, setPasswordOpen] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const editingRef = useRef<Product | null>(null)
+  const imageSaveSeq = useRef(0)
+  editingRef.current = editing
 
   const sorted = useMemo(
     () => [...products].sort((a, b) => a.order - b.order),
@@ -52,13 +59,14 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
 
   const saveProduct = async (e: FormEvent) => {
     e.preventDefault()
-    if (!editing) return
+    const current = editingRef.current
+    if (!current) return
 
     const payload: Product = {
-      ...editing,
-      id: editing.id || `p_${editing.code}`,
-      code: editing.code.trim(),
-      order: editing.order || products.length + 1,
+      ...current,
+      id: current.id || `p_${current.code}`,
+      code: current.code.trim(),
+      order: current.order || products.length + 1,
     }
 
     const res = await fetch('/api/admin/products', {
@@ -94,17 +102,75 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
     setEditing({ ...editing, sizes: ALL_SIZES.filter((s) => sizes.includes(s)) })
   }
 
-  const moveImage = (from: number, dir: -1 | 1) => {
-    if (!editing) return
-    const to = from + dir
-    if (to < 0 || to >= editing.images.length) return
-    const images = [...editing.images]
-    ;[images[from], images[to]] = [images[to], images[from]]
-    setEditing({ ...editing, images })
+  const persistImages = async (productId: string, images: string[]) => {
+    const res = await fetch('/api/admin/products', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: productId, images }),
+    })
+    if (!res.ok) return false
+    setProducts((list) => list.map((p) => (p.id === productId ? { ...p, images } : p)))
+    return true
   }
 
-  const uploadFiles = async (files: FileList | null) => {
-    if (!files?.length || !editing?.code) {
+  const commitImages = async (images: string[], note: string) => {
+    const current = editingRef.current
+    if (!current) return
+    const next = { ...current, images }
+    const seq = ++imageSaveSeq.current
+    editingRef.current = next
+    setEditing(next)
+
+    if (!current.id) {
+      setMessage(`${note}. Ürünü kaydedince uygulanır.`)
+      return
+    }
+
+    const ok = await persistImages(current.id, images)
+    if (seq !== imageSaveSeq.current) return
+    if (ok) {
+      setMessage(note)
+      router.refresh()
+      return
+    }
+
+    editingRef.current = current
+    setEditing(current)
+    setMessage('Kapak fotoğrafı kaydedilemedi')
+  }
+
+  const setCover = (index: number) => {
+    const current = editingRef.current
+    if (!current || index <= 0 || index >= current.images.length) return
+    const images = [...current.images]
+    const [picked] = images.splice(index, 1)
+    images.unshift(picked)
+    void commitImages(images, 'Kapak fotoğrafı güncellendi')
+  }
+
+  const moveImage = (from: number, dir: -1 | 1) => {
+    const current = editingRef.current
+    if (!current) return
+    const to = from + dir
+    if (to < 0 || to >= current.images.length) return
+    const images = [...current.images]
+    const moved = images[from]
+    images[from] = images[to]
+    images[to] = moved
+    const note = from === 0 || to === 0 ? 'Kapak fotoğrafı güncellendi' : 'Görsel sırası güncellendi'
+    void commitImages(images, note)
+  }
+
+  const removeImage = (index: number) => {
+    const current = editingRef.current
+    if (!current) return
+    const images = current.images.filter((_, idx) => idx !== index)
+    void commitImages(images, index === 0 ? 'Kapak fotoğrafı kaldırıldı' : 'Görsel silindi')
+  }
+
+  const uploadFiles = async (files: FileList | null, asCover = false) => {
+    const current = editingRef.current
+    if (!files?.length || !current?.code.trim()) {
       setMessage('Önce ürün kodunu girin')
       return
     }
@@ -114,8 +180,8 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
 
     try {
       const form = new FormData()
-      form.set('code', editing.code.trim())
-      form.set('startIndex', String(editing.images.length + 1))
+      form.set('code', current.code.trim())
+      form.set('startIndex', String(current.images.length + 1))
 
       const list = Array.from(files)
       for (let i = 0; i < list.length; i++) {
@@ -133,12 +199,48 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
 
       const data = await res.json()
       const paths: string[] = data.paths || (data.path ? [data.path] : [])
-      setEditing({ ...editing, images: [...editing.images, ...paths] })
-      setMessage(`${paths.length} görsel eklendi — sıralamak için okları kullanın`)
+      const latest = editingRef.current
+      if (!latest) return
+      const images = asCover ? [...paths, ...latest.images] : [...latest.images, ...paths]
+      await commitImages(
+        images,
+        asCover ? 'Kapak fotoğrafı güncellendi' : `${paths.length} görsel eklendi`,
+      )
     } catch {
       setMessage('Yükleme hatası')
     } finally {
       setUploading(false)
+    }
+  }
+
+  const changePassword = async (e: FormEvent) => {
+    e.preventDefault()
+    if (newPassword !== confirmPassword) {
+      setMessage('Yeni şifreler eşleşmiyor')
+      return
+    }
+
+    setPasswordSaving(true)
+    try {
+      const res = await fetch('/api/admin/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setMessage(data.error || 'Şifre değiştirilemedi')
+        return
+      }
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setPasswordOpen(false)
+      setMessage('Şifre güncellendi')
+    } catch {
+      setMessage('Şifre değiştirilemedi')
+    } finally {
+      setPasswordSaving(false)
     }
   }
 
@@ -207,11 +309,60 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
               onChange={(e) => importJson(e.target.files?.[0] || null)}
             />
           </label>
+          <button type="button" onClick={() => setPasswordOpen((open) => !open)}>
+            Şifre değiştir
+          </button>
           <button type="button" onClick={logout}>
             Çıkış
           </button>
         </div>
       </header>
+
+      {passwordOpen && (
+        <form className="admin-password" onSubmit={changePassword}>
+          <h2>Şifre değiştir</h2>
+          <label>
+            Mevcut şifre
+            <input
+              type="password"
+              autoComplete="current-password"
+              required
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </label>
+          <label>
+            Yeni şifre
+            <input
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={6}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </label>
+          <label>
+            Yeni şifre (tekrar)
+            <input
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={6}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </label>
+          <div className="admin-form-actions">
+            <button type="submit" disabled={passwordSaving}>
+              {passwordSaving ? 'Kaydediliyor...' : 'Şifreyi güncelle'}
+            </button>
+            <button type="button" onClick={() => setPasswordOpen(false)}>
+              Vazgeç
+            </button>
+          </div>
+        </form>
+      )}
 
       {message && <p className="admin-message">{message}</p>}
 
@@ -239,13 +390,18 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
                 <tr key={p.id}>
                   <td>
                     {p.images[0] ? (
-                      <Image src={p.images[0]} alt="" width={40} height={52} />
+                      <img src={p.images[0]} alt="" width={40} height={52} />
                     ) : (
                       '—'
                     )}
                   </td>
                   <td>{p.code}</td>
-                  <td>{formatPrice(p.price)}</td>
+                  <td>
+                    {formatPrice(p.price)}
+                    <div className="admin-unit">
+                      Adet {formatPrice(unitPrice(p.price, p.sizes))}
+                    </div>
+                  </td>
                   <td>{sizesText(p.sizes)}</td>
                   <td>{p.inStock ? 'Var' : 'Yok'}</td>
                   <td>
@@ -285,7 +441,7 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
               </label>
 
               <label>
-                Fiyat (TL)
+                Seri fiyatı (TL)
                 <input
                   type="number"
                   required
@@ -296,6 +452,12 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
                   }
                 />
               </label>
+              <p className="series-hint">
+                Adet fiyatı:{' '}
+                {editing.sizes.length
+                  ? formatPrice(unitPrice(editing.price || 0, editing.sizes))
+                  : '—'}
+              </p>
 
               <label>
                 Renk
@@ -359,44 +521,86 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
                 </label>
               </div>
 
-              <label className="file-btn block">
-                {uploading ? 'Yükleniyor...' : 'Görsel yükle (çoklu)'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  hidden
-                  disabled={uploading}
-                  onChange={(e) => {
-                    uploadFiles(e.target.files)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
+              <div className="cover-upload-row">
+                <label className="file-btn block">
+                  {uploading ? 'Yükleniyor...' : 'Kapak fotoğrafını değiştir'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    disabled={uploading}
+                    onChange={(e) => {
+                      uploadFiles(e.target.files, true)
+                      e.target.value = ''
+                    }}
+                  />
+                </label>
+                <label className="file-btn block">
+                  {uploading ? 'Yükleniyor...' : 'Görsel yükle (çoklu)'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    hidden
+                    disabled={uploading}
+                    onChange={(e) => {
+                      uploadFiles(e.target.files)
+                      e.target.value = ''
+                    }}
+                  />
+                </label>
+              </div>
+              <p className="series-hint">
+                İlk fotoğraf kapaktır. Başka bir fotoğrafı kapak yapmak için Kapak yap&apos;a basın.
+              </p>
 
               {editing.images.length > 0 && (
                 <div className="admin-image-list">
                   {editing.images.map((src, i) => (
-                    <div key={src + i}>
+                    <div key={src}>
                       {i === 0 && <span className="cover-tag">KAPAK</span>}
-                      <Image src={src} alt="" width={56} height={74} />
+                      <img src={src} alt="" />
                       <div className="img-order-actions">
-                        <button type="button" aria-label="Sola taşı" onClick={() => moveImage(i, -1)}>
+                        <button
+                          type="button"
+                          aria-label="Sola taşı"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            moveImage(i, -1)
+                          }}
+                        >
                           ←
                         </button>
-                        <button type="button" aria-label="Sağa taşı" onClick={() => moveImage(i, 1)}>
+                        <button
+                          type="button"
+                          aria-label="Sağa taşı"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            moveImage(i, 1)
+                          }}
+                        >
                           →
                         </button>
                       </div>
+                      {i !== 0 && (
+                        <button
+                          type="button"
+                          className="cover-btn"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setCover(i)
+                          }}
+                        >
+                          Kapak yap
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="remove-img"
-                        onClick={() =>
-                          setEditing({
-                            ...editing,
-                            images: editing.images.filter((_, idx) => idx !== i),
-                          })
-                        }
+                        onClick={(e) => {
+                          e.preventDefault()
+                          removeImage(i)
+                        }}
                       >
                         Sil
                       </button>
@@ -410,12 +614,19 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
                 <div className="admin-card-preview">
                   <div className="preview-thumb">
                     {editing.images[0] ? (
-                      <Image src={editing.images[0]} alt="" fill />
+                      <img key={editing.images[0]} src={editing.images[0]} alt="" />
                     ) : (
                       <span>Görsel yok</span>
                     )}
                   </div>
+                  <span className="price-kicker">Seri fiyatı</span>
                   <strong>{formatPrice(editing.price || 0)}</strong>
+                  <span>
+                    Adet{' '}
+                    {editing.sizes.length
+                      ? formatPrice(unitPrice(editing.price || 0, editing.sizes))
+                      : '—'}
+                  </span>
                   <span>
                     {sizesText(editing.sizes)} —{' '}
                     {editing.sizes.length ? seriesLabel(editing.sizes) : '—'}

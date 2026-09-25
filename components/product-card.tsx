@@ -7,7 +7,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { QuantityControl } from '@/components/quantity-control'
 import { siteConfig } from '@/config/site'
-import { formatPrice, piecesFor, seriesLabel, sizesText } from '@/lib/format'
+import { formatPrice, piecesFor, seriesLabel, sizesText, unitPrice } from '@/lib/format'
 import { useOrderList } from '@/store/order-list'
 import type { Product } from '@/types/product'
 
@@ -78,8 +78,15 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       </div>
 
       <div className="product-meta">
-        <div className="product-heading">
-          <p className="price">{formatPrice(product.price)}</p>
+        <div className="price-pair">
+          <div>
+            <span className="price-kicker">Seri fiyatı</span>
+            <p className="price">{formatPrice(product.price)}</p>
+          </div>
+          <div className="price-pair-unit">
+            <span className="price-kicker">Adet fiyatı</span>
+            <p className="unit-price">{formatPrice(unitPrice(product.price, product.sizes))}</p>
+          </div>
         </div>
         <p className="series-detail">
           {sizesText(product.sizes)} — {seriesLabel(product.sizes)}

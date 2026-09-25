@@ -1,11 +1,12 @@
 import { siteConfig } from '@/config/site'
-import { formatPrice, sizesText } from '@/lib/format'
+import { formatPrice, sizesText, unitPrice } from '@/lib/format'
 import type { OrderItem } from '@/types/product'
 
 export function buildWhatsAppMessage(items: OrderItem[], note: string): string {
   const lines = items.map((item, index) => {
     const lineTotal = item.price * item.seriesQty
-    return `${index + 1}) Ürün Kodu: ${item.code} — ${item.seriesQty} seri (${sizesText(item.sizes).replace(/ · /g, '·')}) — ${formatPrice(lineTotal)}`
+    const each = unitPrice(item.price, item.sizes)
+    return `${index + 1}) Ürün Kodu: ${item.code} — ${item.seriesQty} seri (${sizesText(item.sizes).replace(/ · /g, '·')}) — Seri ${formatPrice(item.price)} · Adet ${formatPrice(each)} — ${formatPrice(lineTotal)}`
   })
 
   const totalSeries = items.reduce((sum, item) => sum + item.seriesQty, 0)
