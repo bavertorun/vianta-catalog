@@ -21,10 +21,16 @@ function writeError(error: unknown) {
 }
 
 function safeImages(images: unknown[]): string[] {
-  return images.filter(
-    (src): src is string =>
-      typeof src === 'string' && src.startsWith('/products/') && !src.includes('..'),
-  )
+  return images.filter((src): src is string => {
+    if (typeof src !== 'string' || src.includes('..')) return false
+    if (src.startsWith('/products/')) return true
+    try {
+      const url = new URL(src)
+      return url.protocol === 'https:' && url.hostname.endsWith('.blob.vercel-storage.com')
+    } catch {
+      return false
+    }
+  })
 }
 
 export async function GET() {

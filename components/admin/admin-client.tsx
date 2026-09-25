@@ -108,7 +108,11 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: productId, images }),
     })
-    if (!res.ok) return false
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      setMessage(err.error || 'Kapak fotoğrafı kaydedilemedi')
+      return false
+    }
     setProducts((list) => list.map((p) => (p.id === productId ? { ...p, images } : p)))
     return true
   }
@@ -193,7 +197,8 @@ export function AdminClient({ initialProducts }: AdminClientProps) {
       setMessage('Yükleniyor...')
       const res = await fetch('/api/admin/upload', { method: 'POST', body: form })
       if (!res.ok) {
-        setMessage('Yükleme başarısız')
+        const err = await res.json().catch(() => ({}))
+        setMessage(err.error || 'Yükleme başarısız')
         return
       }
 

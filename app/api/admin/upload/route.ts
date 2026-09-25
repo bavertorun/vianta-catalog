@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
 import sharp from 'sharp'
+import { put } from '@vercel/blob'
 import { isReadOnlyFsError } from '@/lib/atomic-write'
 import { isAuthenticated } from '@/lib/admin-auth'
 
@@ -9,24 +10,33 @@ function safeCode(code: string): string {
   return code.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40)
 }
 
-async function saveImage(bytes: Buffer, code: string, index: number) {
-  const dir = path.resolve(process.cwd(), 'public', 'products')
-  await fs.mkdir(dir, { recursive: true })
-
-  const stamp = Date.now().toString(36)
-  const filename = `${safeCode(code)}-${index}-${stamp}.webp`
-  const outPath = path.resolve(dir, filename)
-  if (!outPath.startsWith(dir + path.sep)) {
-    throw new Error('Geçersiz dosya yolu')
-  }
-
-  // Daha hızlı işlem: 1200px, düşük effort WebP
-  await sharp(bytes)
+async function toWebp(bytes: Buffer) {
+  return sharp(bytes)
     .rotate()
     .resize({ width: 1200, withoutEnlargement: true })
     .webp({ quality: 72, effort: 3 })
-    .toFile(outPath)
+    .toBuffer()
+}
 
+async function saveImage(bytes: Buffer, code: string, index: number) {
+  const stamp = Date.now().toString(36)
+  const filename = `${safeCode(code)}-${index}-${stamp}.webp`
+  const webp = await toWebp(bytes)
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`products/${filename}`, webp, {
+      access: 'public',
+      contentType: 'image/webp',
+      addRandomSuffix: false,
+    })
+    return blob.url
+  }
+
+  const dir = path.resolve(process.cwd(), 'public', 'products')
+  await fs.mkdir(dir, { recursive: true })
+  const outPath = path.resolve(dir, filename)
+  if (!outPath.startsWith(dir + path.sep)) throw new Error('Geçersiz dosya yolu')
+  await fs.writeFile(outPath, webp)
   return `/products/${filename}`
 }
 
