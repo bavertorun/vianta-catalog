@@ -32,21 +32,12 @@ async function readStoredHash(): Promise<string | null> {
   }
 }
 
-export class AdminConfigError extends Error {
-  constructor() {
-    super('ADMIN_PASSWORD missing')
-  }
-}
+const ADMIN_PASSWORD_HASH = '7aa287d3572ff75802a9be8078f7951027bbd27db2b2899c91a7266c0cb9e2e4'
 
 export async function getPasswordHash(): Promise<string> {
   const stored = await readStoredHash()
   if (stored) return stored
-  const fromEnv = process.env.ADMIN_PASSWORD
-  if (!fromEnv) {
-    if (process.env.NODE_ENV === 'production') throw new AdminConfigError()
-    return hashPassword('vianta-admin')
-  }
-  return hashPassword(fromEnv)
+  return ADMIN_PASSWORD_HASH
 }
 
 export async function verifyPassword(password: string): Promise<boolean> {

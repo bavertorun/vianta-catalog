@@ -15,13 +15,7 @@ Admin: [http://localhost:3000/admin](http://localhost:3000/admin)
 
 ## Admin şifresi
 
-`.env.local` içinde:
-
-```
-ADMIN_PASSWORD=guclu-bir-sifre
-```
-
-Varsayılan (ayarlanmazsa): `vianta-admin`
+Şifre proje içine yazılıdır. `.env` gerekmez.
 
 ## Ürün ekleme
 
